@@ -23,3 +23,4 @@ void sc_apply_seccomp_filter(struct sock_fprog *prog);
 void die(const char *fmt, ...);
 
 #endif
+
