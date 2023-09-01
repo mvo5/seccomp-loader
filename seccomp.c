@@ -41,13 +41,20 @@ FILE* sc_must_read_and_validate_header_from_file(const char *profile_path, struc
 	if (num_read < sizeof(struct sc_seccomp_file_header)) {
 		die("short read on seccomp header: %zu", num_read);
 	}
+	// check everything
+	if (hdr->header[0] != 'S' || hdr->header[1] != 'C') {
+		die("unexpected seccomp header: %x%x", hdr->header[0], hdr->header[1]);
+	}
+	if (hdr->len_filter > MAX_BPF_SIZE) {
+		die("allow filter size too big %u", hdr->len_filter);
+	}
 	return file;
 }
 
 void sc_must_read_filter_from_file(FILE *file, uint32_t len_bytes, struct sock_fprog *prog)
 {
 	prog->len = len_bytes / sizeof(struct sock_filter);
-	prog->filter = (struct sock_filter *)malloc(MAX_BPF_SIZE);
+	prog->filter = (struct sock_filter *)malloc(len_bytes);
 	if (prog->filter == NULL) {
 		die("cannot allocate %u bytes of memory for seccomp filter ", len_bytes);
 	}
